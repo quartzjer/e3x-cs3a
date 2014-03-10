@@ -1,0 +1,32 @@
+{
+  "name": "telehash-cs3a",
+  "version": "0.0.1",
+  "description": "CipherSet 3a for telehash",
+  "main": "node.js",
+  "dependencies": {
+    "js-nacl": "0.6.x"
+  },
+  "optionalDependencies": {
+    "sodium": "1.0.x"
+  },
+  "browserify":"./browser.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quartzjer/telehash-cs3a.git"
+  },
+  "keywords": [
+    "telehash",
+    "cipherset",
+    "cs3a"
+  ],
+  "author": {
+    "name": "Jeremie Miller",
+    "email": "jeremie@jabber.org",
+    "url": "http://jeremie.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/quartzjer/telehash-cs3a/issues"
+  },
+  "homepage": "https://github.com/quartzjer/telehash-cs3a"
+}
