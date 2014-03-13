@@ -5,5 +5,7 @@ try{
 
   Object.keys(cs3a).forEach(function(f){ exports[f] = cs3a[f];});  
 }catch(E){
-  console.log("CS3a failed to load",E);
+  exports.install = function(){
+    console.log("CS3a failed to load",E);    
+  }
 }
