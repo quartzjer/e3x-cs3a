@@ -47,8 +47,8 @@ exports.openize = function(id, to, inner)
   var secret = sodium.crypto_box_beforenm(to.public, to.linekey.secretKey);
   var nonce = new Buffer("000000000000000000000000000000000000000000000001","hex");
 
-  // encrypt the inner
-  var body = self.pencode(inner,id.cs["3a"].key);
+  // encrypt the inner, encode if needed
+  var body = (!Buffer.isBuffer(inner)) ? self.pencode(inner,id.cs["3a"].key) : inner;
   var cbody = sodium.crypto_secretbox(body, nonce, secret);
   cbody = cbody.slice(sodium.crypto_secretbox_BOXZEROBYTES); // remove zeros from nacl's api
 
@@ -79,12 +79,18 @@ exports.deopenize = function(id, open)
   var body = sodium.crypto_secretbox_open(Buffer.concat([zeros,cbody]),nonce,secret);
   var inner = self.pdecode(body);
   if(!inner) return ret;
+  ret.inner = inner;
 
-  // load inner key info
-  ret.key = inner.body;
-  if(!ret.key || ret.key.length != 32) return ret;
-  if(typeof inner.js.from != "object" || !inner.js.from["3a"]) return ret;
-  if(crypto.createHash("SHA256").update(inner.body).digest("hex") != inner.js.from["3a"]) return ret;
+  // if needs validation, load inner key info
+  if(!open.from)
+  {
+    ret.key = inner.body;
+    if(!ret.key || ret.key.length != 32) return ret;
+    if(typeof inner.js.from != "object" || !inner.js.from["3a"]) return ret;
+    if(crypto.createHash("SHA256").update(inner.body).digest("hex") != inner.js.from["3a"]) return ret;
+  }else{
+    ret.key = open.from.public;
+  }
 
   // verify the hmac
   var secret = sodium.crypto_box_beforenm(ret.key, id.cs["3a"].private);
