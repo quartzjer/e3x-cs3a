@@ -50,6 +50,7 @@ exports.openize = function(id, to, inner)
   // encrypt the inner
   var body = self.pencode(inner,id.cs["3a"].key);
   var cbody = sodium.crypto_secretbox(body, nonce, secret);
+  cbody = cbody.slice(sodium.crypto_secretbox_BOXZEROBYTES); // remove zeros from nacl's api
 
   // prepend the line public key and hmac it  
   var secret = sodium.crypto_box_beforenm(to.public, id.cs["3a"].private);
@@ -74,7 +75,8 @@ exports.deopenize = function(id, open)
   var nonce = new Buffer("000000000000000000000000000000000000000000000001","hex");
 
   // decipher the inner
-  var body = sodium.crypto_secretbox_open(cbody,nonce,secret);
+  var zeros = new Buffer(Array(sodium.crypto_secretbox_BOXZEROBYTES)); // add zeros for nacl's api
+  var body = sodium.crypto_secretbox_open(Buffer.concat([zeros,cbody]),nonce,secret);
   var inner = self.pdecode(body);
   if(!inner) return ret;
 
@@ -120,6 +122,7 @@ exports.lineize = function(to, packet)
 	// now encrypt the packet
   var nonce = crypto.randomBytes(24);
   var cbody = sodium.crypto_secretbox(self.pencode(packet.js,packet.body), nonce, to.encKey);
+  cbody = cbody.slice(sodium.crypto_secretbox_BOXZEROBYTES); // remove zeros from nacl's api
 
   // create final body
   var body = Buffer.concat([to.lineInB,nonce,cbody]);
@@ -136,7 +139,8 @@ exports.delineize = function(from, packet)
   // decrypt body
   var nonce = packet.body.slice(0,24);
   var cbody = packet.body.slice(24);
-  var deciphered = self.pdecode(sodium.crypto_secretbox_open(cbody,nonce,from.decKey));
+  var zeros = new Buffer(Array(sodium.crypto_secretbox_BOXZEROBYTES)); // add zeros for nacl's api
+  var deciphered = self.pdecode(sodium.crypto_secretbox_open(Buffer.concat([zeros,cbody]),nonce,from.decKey));
 	if(!deciphered) return "invalid decrypted packet";
 
   packet.js = deciphered.js;
