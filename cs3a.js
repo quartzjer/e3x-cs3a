@@ -18,7 +18,6 @@ exports.genkey = function(ret,cbDone,cbStep)
   var kp = sodium.crypto_box_keypair();
   ret["3a"] = kp.publicKey.toString("base64");
   ret["3a_secret"] = kp.secretKey.toString("base64");
-  ret.parts["3a"] = crypto.createHash("SHA256").update(kp.publicKey).digest("hex");
   cbDone();
 }
 
