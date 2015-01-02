@@ -1,32 +1,28 @@
 var crypto = require('crypto');
+var sodium = {};
 
 exports.id = '3a';
 
 // env-specific crypto methods
-exports.crypt = function(ecc,aes)
+exports.crypt = function(lib)
 {
-  crypto.ecc = ecc;
-  crypto.aes = aes;
+  sodium = lib;
 }
 
 exports.generate = function(cb)
 {
-  try {
-    var k = new crypto.ecc.ECKey(crypto.ecc.ECCurves.secp160r1);
-  }catch(E){
-    return cb(E);
-  }
-  cb(null, {key:k.PublicKey, secret:k.PrivateKey});
+  var kp = sodium.crypto_box_keypair();
+  cb(null, {key:kp.publicKey, secret:kp.secretKey});
 }
 
 exports.Local = function(pair)
 {
   var self = this;
   try{
-    self.key = new crypto.ecc.ECKey(crypto.ecc.ECCurves.secp160r1, pair.key, true);
-    self.secret = new crypto.ecc.ECKey(crypto.ecc.ECCurves.secp160r1, pair.secret);
-    if(self.key.PublicKey.toString() != pair.key.toString()) throw new Error('invalid public key data');
-    if(self.secret.PrivateKey.toString() != pair.secret.toString()) throw new Error('invalid secret key data');
+    if(!Buffer.isBuffer(pair.key) || pair.key.length != 32) throw new Error("invalid public key");
+    self.key = pair.key;
+    if(!Buffer.isBuffer(pair.secret) || pair.secret.length != 32) throw new Error("invalid secret key");
+    self.secret = pair.secret;
   }catch(E){
     self.err = E;
   }
@@ -67,10 +63,10 @@ exports.Remote = function(key)
 {
   var self = this;
   try{
-    self.endpoint = new crypto.ecc.ECKey(crypto.ecc.ECCurves.secp160r1, key, true);
-    self.ephemeral = new crypto.ecc.ECKey(crypto.ecc.ECCurves.secp160r1);
-    self.token = crypto.createHash('sha256').update(self.ephemeral.PublicKey.slice(0,16)).digest().slice(0,16);
-    self.seq = crypto.randomBytes(4).readUInt32LE(0); // start from random place
+    if(!Buffer.isBuffer(key) || key.length != 32) throw new Error("invalid public key");
+    self.endpoint = pair.key;
+    self.ephemeral = sodium.crypto_box_keypair();
+    self.token = crypto.createHash('sha256').update(self.ephemeral.publicKey.slice(0,16)).digest().slice(0,16);
   }catch(E){
     self.err = E;
   }
@@ -128,8 +124,6 @@ exports.Ephemeral = function(remote, body)
 {
   var self = this;
   
-  self.seq = crypto.randomBytes(4).readUInt32LE(0); // start from random place
-
   try{
     // sender token
     self.token = crypto.createHash('sha256').update(body.slice(0,16)).digest().slice(0,16);
@@ -195,20 +189,7 @@ exports.Ephemeral = function(remote, body)
 
 
 
-var crypto = require("crypto");
-
-var self;
-exports.install = function(telehash)
-{
-  self = telehash;
-  telehash.CSets["3a"] = exports;
-}
-
-var sodium;
-exports.crypt = function(s)
-{
-  sodium = s;
-}
+// OLD
 
 exports.genkey = function(ret,cbDone,cbStep)
 {
