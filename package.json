@@ -9,6 +9,13 @@
   "optionalDependencies": {
     "sodium": "1.0.x"
   },
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*"
+   },
+   "scripts": {
+    "test": "make test"
+   },
   "browserify":"./browser.js",
   "repository": {
     "type": "git",
