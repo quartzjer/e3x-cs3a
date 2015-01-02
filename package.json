@@ -1,7 +1,7 @@
 {
-  "name": "telehash-cs3a",
+  "name": "e3x-cs3a",
   "version": "0.0.7",
-  "description": "CipherSet 3a for telehash",
+  "description": "CS3a - e3x cipher set",
   "main": "node.js",
   "dependencies": {
     "js-nacl": "0.6.x"
@@ -12,7 +12,7 @@
   "browserify":"./browser.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/quartzjer/telehash-cs3a.git"
+    "url": "https://github.com/quartzjer/e3x-cs3a.git"
   },
   "keywords": [
     "telehash",
@@ -26,7 +26,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/quartzjer/telehash-cs3a/issues"
+    "url": "https://github.com/quartzjer/e3x-cs3a/issues"
   },
-  "homepage": "https://github.com/quartzjer/telehash-cs3a"
+  "homepage": "https://github.com/quartzjer/e3x-cs3a"
 }
