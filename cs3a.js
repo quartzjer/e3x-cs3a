@@ -64,7 +64,7 @@ exports.Remote = function(key)
   var self = this;
   try{
     if(!Buffer.isBuffer(key) || key.length != 32) throw new Error("invalid public key");
-    self.endpoint = pair.key;
+    self.endpoint = key;
     self.ephemeral = sodium.crypto_box_keypair();
     self.token = crypto.createHash('sha256').update(self.ephemeral.publicKey.slice(0,16)).digest().slice(0,16);
   }catch(E){
@@ -74,15 +74,13 @@ exports.Remote = function(key)
   // verifies the hmac on an incoming message body
   self.verify = function(local, body){
     if(!Buffer.isBuffer(body)) return false;
+    var mac1 = body.slice(body.length-16).toString("hex");
 
-    // derive shared secret from both identity keys
-    var secret = local.secret.deriveSharedSecret(self.endpoint);
+    var secret = sodium.crypto_box_beforenm(self.endpoint, local.secret);
+    var mac2 = sodium.crypto_onetimeauth(body.slice(0,body.length-16),secret).toString("hex");
 
-    // hmac key is the secret and seq bytes combined to make it unique each time
-    var iv = body.slice(21,21+4);
-    var mac = fold(3,crypto.createHmac("sha256", Buffer.concat([secret,iv])).update(body.slice(0,body.length-4)).digest());
-    if(mac.toString('hex') != body.slice(body.length-4).toString('hex')) return false;
-    
+    if(mac2 != mac1) return false;
+
     return true;
   };
 
@@ -129,20 +127,21 @@ exports.Ephemeral = function(remote, body)
     self.token = crypto.createHash('sha256').update(body.slice(0,16)).digest().slice(0,16);
 
     // extract received ephemeral key
-    var key = new crypto.ecc.ECKey(crypto.ecc.ECCurves.secp160r1, body.slice(0,21), true);
+    var key = body.slice(0,32);
 
-    // get shared secret to make channel keys
-    var secret = remote.ephemeral.deriveSharedSecret(key);
-    self.encKey = fold(1,crypto.createHash("sha256")
+    from.lineInB = new Buffer(from.lineIn, "hex");
+    var secret = sodium.crypto_box_beforenm(key, remote.ephemeral.secretKey);
+    self.encKey = crypto.createHash("sha256")
       .update(secret)
-      .update(remote.ephemeral.PublicKey)
-      .update(key.PublicKey)
-      .digest());
-    self.decKey = fold(1,crypto.createHash("sha256")
+      .update(remote.ephemeral.publicKey)
+      .update(key)
+      .digest();
+    self.decKey = crypto.createHash("sha256")
       .update(secret)
-      .update(key.PublicKey)
-      .update(remote.ephemeral.PublicKey)
-      .digest());
+      .update(key)
+      .update(remote.ephemeral.publicKey)
+      .digest();
+
   }catch(E){
     self.err = E;
   }

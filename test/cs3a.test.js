@@ -59,8 +59,10 @@ describe('cs3a', function(){
 
   it('should load a remote', function(){
     var remote = new cs3a.Remote(pairB.key);
+    expect(remote.err).to.not.exist;
     expect(remote.verify).to.be.a('function');
     expect(remote.encrypt).to.be.a('function');
+    expect(remote.token).to.exist;
     expect(remote.token.length).to.be.equal(16);
   });
 
