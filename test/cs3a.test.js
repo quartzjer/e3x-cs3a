@@ -5,10 +5,10 @@ describe('cs3a', function(){
 
   // fixtures
   var pairA = {key:new Buffer('627f107c4c86d0f81cf6ad345b2a41b8ea29ae111db199c0fed547358ecb4257','hex'), secret:new Buffer('458fbd8b4964e29ed9f274c837055cc5f28ce37abe9cabf1869935c7a65da23b','hex')};
-  var mbodyAB = new Buffer('030d8def4405c1380afeca3760322be710a3f53cfe7c9bed207249f31af977','hex');
+  var mbodyAB = new Buffer('81b649699d1cce6821de7ee1a4d9267c93c666478f515ce4371edab0f9f7f96b0fa48c4afa723948ab6ce1b73bade218998801a12e05c073bbc2d591ef575ecb92a23a5c36d7acc25304c7ffb2fc7fdfd489b0aef6253f2b175f','hex');
 
   var pairB = {key:new Buffer('3d6062a1bb3549b56f8066f314574b5f444fe13f0b0c5cd0b5b95f12f09fd16c','hex'), secret:new Buffer('a117b27b21ac8bc39e53aeb552f4f4e92fd76856ef98985ebd1cc76612169d89','hex')};
-  var mbodyBA = new Buffer('021aaad76e86b2c951a0ab00b22d031567b6bd556aa953a22b65f5d62dcbba','hex');
+  var mbodyBA = new Buffer('44e915952880e6567b820bba92f6ce39eaa89cbd0f785827a20aa2daf8e916387ede7632b4db3bb569ad691805f273d0fb1ff4a340ce5a6c7f657a6c96ed8a11a2d71100f078bdce7ba61a67f7581d83d81d0d052dcf0c1b6918','hex');
   
   it('should export an object', function(){
     expect(cs3a).to.be.a('object');
@@ -71,7 +71,7 @@ describe('cs3a', function(){
     var remote = new cs3a.Remote(pairB.key);
     var message = remote.encrypt(local, new Buffer('0000','hex'));
     expect(Buffer.isBuffer(message)).to.be.equal(true);
-    expect(message.length).to.be.equal(31);
+    expect(message.length).to.be.equal(90);
 //    console.log("mbodyAB",message.toString('hex'));
   });
 
@@ -80,7 +80,7 @@ describe('cs3a', function(){
     var remote = new cs3a.Remote(pairA.key);
     var message = remote.encrypt(local, new Buffer('0000','hex'));
     expect(Buffer.isBuffer(message)).to.be.equal(true);
-    expect(message.length).to.be.equal(31);
+    expect(message.length).to.be.equal(90);
 //    console.log("mbodyBA",message.toString('hex'));
   });
 

@@ -30,30 +30,17 @@ exports.Local = function(pair)
   // decrypt message body and return the inner
   self.decrypt = function(body){
     if(!Buffer.isBuffer(body)) return false;
-    if(body.length < 21+4+4) return false;
+    if(body.length < 32+24+16) return false;
 
-    var keybuf = body.slice(0,21);
-    var iv = body.slice(21,21+4);
-    var innerc = body.slice(21+4,body.length-4);
-    // mac is handled during verify stage
+    var key = body.slice(0,32);
+    var nonce = body.slice(32,24);
+    var innerc = body.slice(32+24,body.length-16);
 
-    try{
-      var ephemeral = new crypto.ecc.ECKey(crypto.ecc.ECCurves.secp160r1, keybuf, true);
-      var secret = self.secret.deriveSharedSecret(ephemeral);
-    }catch(E){
-      return false;
-    }
+    var secret = sodium.crypto_box_beforenm(key, self.private);
 
-    var key = fold(1,crypto.createHash("sha256").update(secret).digest());
-    var ivz = new Buffer(12);
-    ivz.fill(0);
-
-    // aes-128 decipher the inner
-    try{
-      var inner = crypto.aes(false, key, Buffer.concat([iv,ivz]), innerc);
-    }catch(E){
-      return false;
-    }
+    // decipher the inner
+    var zeros = new Buffer(Array(sodium.crypto_secretbox_BOXZEROBYTES)); // add zeros for nacl's api
+    var inner = sodium.crypto_secretbox_open(Buffer.concat([zeros,cbody]),nonce,secret);
     
     return inner;
   };
@@ -76,7 +63,7 @@ exports.Remote = function(key)
     if(!Buffer.isBuffer(body)) return false;
     var mac1 = body.slice(body.length-16).toString("hex");
 
-    var secret = sodium.crypto_box_beforenm(self.endpoint, local.secret);
+    var secret = sodium.crypto_box_beforenm(self.endpoint, self.ephemeral.secretKey);
     var mac2 = sodium.crypto_onetimeauth(body.slice(0,body.length-16),secret).toString("hex");
 
     if(mac2 != mac1) return false;
@@ -88,32 +75,19 @@ exports.Remote = function(key)
     if(!Buffer.isBuffer(inner)) return false;
 
     // get the shared secret to create the iv+key for the open aes
-    try{
-      var secret = self.ephemeral.deriveSharedSecret(self.endpoint);
-    }catch(E){
-      return false;
-    }
-    var key = fold(1,crypto.createHash("sha256").update(secret).digest());
-    var iv = new Buffer(4);
-    iv.writeUInt32LE(self.seq++,0);
-    var ivz = new Buffer(12);
-    ivz.fill(0);
+    var secret = sodium.crypto_box_beforenm(self.endpoint, local.secret);
+    var nonce = crypto.randomBytes(24);
 
-    // encrypt the inner
-    try{
-      var innerc = crypto.aes(true, key, Buffer.concat([iv,ivz]), inner);
-      var macsecret = local.secret.deriveSharedSecret(self.endpoint);
-    }catch(E){
-      return false;
-    }
+    // encrypt the inner, encode if needed
+    var innerc = sodium.crypto_secretbox(inner, nonce, secret);
+    innerc = innerc.slice(sodium.crypto_secretbox_BOXZEROBYTES); // remove zeros from nacl's api
+    var body = Buffer.concat([self.ephemeral.publicKey,nonce,innerc]);
 
-    // prepend the key and hmac it
-    var macd = Buffer.concat([self.ephemeral.PublicKey,iv,innerc]);
-    // key is the secret and seq bytes combined
-    var hmac = fold(3,crypto.createHmac("sha256", Buffer.concat([macsecret,iv])).update(macd).digest());
+    // prepend the line public key and hmac it  
+    var secret = sodium.crypto_box_beforenm(self.endpoint, local.secret);
+    var mac = sodium.crypto_onetimeauth(body,secret);
 
-    // create final message body
-    return Buffer.concat([macd,hmac]);
+    return Buffer.concat([body,mac]);
   };
 
 }
