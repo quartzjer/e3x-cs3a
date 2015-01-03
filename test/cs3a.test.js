@@ -100,7 +100,9 @@ describe('cs3a', function(){
     // now invert them to decrypt
     var local = new cs3a.Local(pairB);
     var remote = new cs3a.Remote(pairA.key);
-    expect(local.decrypt(outer).toString('hex')).to.be.equal(inner.toString('hex'));
+    var inner2 = local.decrypt(outer);
+    expect(inner2).to.exist;
+    expect(inner2.toString('hex')).to.be.equal(inner.toString('hex'));
     
     // verify sender
     expect(remote.verify(local,outer)).to.be.equal(true);
@@ -118,7 +120,7 @@ describe('cs3a', function(){
     var ephemeral = new cs3a.Ephemeral(remote, mbodyBA);
     var channel = ephemeral.encrypt(new Buffer('0000','hex'));
     expect(Buffer.isBuffer(channel)).to.be.equal(true);
-    expect(channel.length).to.be.equal(10);
+    expect(channel.length).to.be.equal(42);
   });
 
   it('ephemeral full', function(){

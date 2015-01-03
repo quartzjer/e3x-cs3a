@@ -33,14 +33,14 @@ exports.Local = function(pair)
     if(body.length < 32+24+16) return false;
 
     var key = body.slice(0,32);
-    var nonce = body.slice(32,24);
+    var nonce = body.slice(32,32+24);
     var innerc = body.slice(32+24,body.length-16);
 
-    var secret = sodium.crypto_box_beforenm(key, self.private);
+    var secret = sodium.crypto_box_beforenm(key, self.secret);
 
     // decipher the inner
     var zeros = new Buffer(Array(sodium.crypto_secretbox_BOXZEROBYTES)); // add zeros for nacl's api
-    var inner = sodium.crypto_secretbox_open(Buffer.concat([zeros,cbody]),nonce,secret);
+    var inner = sodium.crypto_secretbox_open(Buffer.concat([zeros,innerc]),nonce,secret);
     
     return inner;
   };
@@ -103,7 +103,6 @@ exports.Ephemeral = function(remote, body)
     // extract received ephemeral key
     var key = body.slice(0,32);
 
-    from.lineInB = new Buffer(from.lineIn, "hex");
     var secret = sodium.crypto_box_beforenm(key, remote.ephemeral.secretKey);
     self.encKey = crypto.createHash("sha256")
       .update(secret)
@@ -121,41 +120,24 @@ exports.Ephemeral = function(remote, body)
   }
 
   self.decrypt = function(outer){
-    // extract the three buffers
-    var seq = outer.slice(0,4);
-    var cbody = outer.slice(4,outer.length-4);
-    var mac1 = outer.slice(outer.length-4);
-
-    // validate the hmac
-    var key = Buffer.concat([self.decKey,seq]);
-    var mac2 = fold(3,crypto.createHmac("sha256", key).update(cbody).digest());
-    if(mac1.toString('hex') != mac2.toString('hex')) return false;
-
     // decrypt body
-    var ivz = new Buffer(12);
-    ivz.fill(0);
-    try{
-      var body = crypto.aes(false,self.decKey,Buffer.concat([seq,ivz]),cbody);
-    }catch(E){
-      return false;
-    }
+    var nonce = outer.slice(0,24);
+    var cbody = outer.slice(24);
+
+    var zeros = new Buffer(Array(sodium.crypto_secretbox_BOXZEROBYTES)); // add zeros for nacl's api
+    var body = sodium.crypto_secretbox_open(Buffer.concat([zeros,cbody]),nonce,self.decKey);
+
     return body;
   };
 
   self.encrypt = function(inner){
     // now encrypt the packet
-    var iv = new Buffer(16);
-    iv.fill(0);
-    iv.writeUInt32LE(self.seq++,0);
-
-    var cbody = crypto.aes(true, self.encKey, iv, inner);
-
-    // create the hmac
-    var key = Buffer.concat([self.encKey,iv.slice(0,4)]);
-    var mac = fold(3,crypto.createHmac("sha256", key).update(cbody).digest());
+    var nonce = crypto.randomBytes(24);
+    var cbody = sodium.crypto_secretbox(inner, nonce, self.encKey);
+    cbody = cbody.slice(sodium.crypto_secretbox_BOXZEROBYTES); // remove zeros from nacl's api
 
     // return final body
-    return Buffer.concat([iv.slice(0,4),cbody,mac]);
+    return Buffer.concat([nonce,cbody]);
   };
 }
 
