@@ -8,7 +8,7 @@ describe('cs3a', function(){
   var mbodyAB = new Buffer('81b649699d1cce6821de7ee1a4d9267c93c666478f515ce4371edab0f9f7f96b0fa48c4afa723948ab6ce1b73bade218998801a12e05c073bbc2d591ef575ecb92a23a5c36d7acc25304c7ffb2fc7fdfd489b0aef6253f2b175f','hex');
 
   var pairB = {key:new Buffer('3d6062a1bb3549b56f8066f314574b5f444fe13f0b0c5cd0b5b95f12f09fd16c','hex'), secret:new Buffer('a117b27b21ac8bc39e53aeb552f4f4e92fd76856ef98985ebd1cc76612169d89','hex')};
-  var mbodyBA = new Buffer('44e915952880e6567b820bba92f6ce39eaa89cbd0f785827a20aa2daf8e916387ede7632b4db3bb569ad691805f273d0fb1ff4a340ce5a6c7f657a6c96ed8a11a2d71100f078bdce7ba61a67f7581d83d81d0d052dcf0c1b6918','hex');
+  var mbodyBA = new Buffer('a4e0c137567c5a30344c28720931d14776584acfbf1bfcc161ba12fc0e82940fa0c89690bf82c65a58e57a078ad5a453d96deef60a3e77da55fbcdad5add20f639b7129e6939a90452c044ba0e818d45e7c8b1e8e4cefc30c8f3','hex');
   
   it('should export an object', function(){
     expect(cs3a).to.be.a('object');

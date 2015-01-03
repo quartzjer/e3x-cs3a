@@ -63,7 +63,7 @@ exports.Remote = function(key)
     if(!Buffer.isBuffer(body)) return false;
     var mac1 = body.slice(body.length-16).toString("hex");
 
-    var secret = sodium.crypto_box_beforenm(self.endpoint, self.ephemeral.secretKey);
+    var secret = sodium.crypto_box_beforenm(self.endpoint, local.secret);
     var mac2 = sodium.crypto_onetimeauth(body.slice(0,body.length-16),secret).toString("hex");
 
     if(mac2 != mac1) return false;
