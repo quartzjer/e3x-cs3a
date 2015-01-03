@@ -75,7 +75,7 @@ exports.Remote = function(key)
     if(!Buffer.isBuffer(inner)) return false;
 
     // get the shared secret to create the iv+key for the open aes
-    var secret = sodium.crypto_box_beforenm(self.endpoint, local.secret);
+    var secret = sodium.crypto_box_beforenm(self.endpoint, self.ephemeral.secretKey);
     var nonce = crypto.randomBytes(24);
 
     // encrypt the inner, encode if needed

@@ -91,7 +91,7 @@ describe('cs3a', function(){
     expect(bool).to.be.equal(true);
   });
 
-  it('should dynamically encrypt, decrypt, and verify', function(){
+  it('should dynamically encrypt, decrypt, and verify', function(done){
     var local = new cs3a.Local(pairA);
     var remote = new cs3a.Remote(pairB.key);
     var inner = new Buffer('4242','hex');
@@ -106,6 +106,7 @@ describe('cs3a', function(){
     
     // verify sender
     expect(remote.verify(local,outer)).to.be.equal(true);
+    done();
   });
 
   it('should load an ephemeral', function(){
