@@ -1,11 +1,13 @@
-try{
-  var sodium = require("sodium").api;
-  var cs3a = require("./cs3a.js");
-  cs3a.crypt(sodium);
 
-  Object.keys(cs3a).forEach(function(f){ exports[f] = cs3a[f];});  
+// load common module
+exports = module.exports = require('./cs3a.js');
+
+// try compiled sodium, fall back to pure js one (TODO)
+try{
+  if(process.env.PURE == 'true') throw new Error("pure requested");
+  var sodium = require("sodium").api;
+  // load node-specific crypto methods
+  exports.crypt(sodium);
 }catch(E){
-  exports.install = function(){
-    console.log("CS3a failed to load",E);    
-  }
+  console.log("CS3a failed to load (TODO use tweetnacl.js?):",E);
 }
