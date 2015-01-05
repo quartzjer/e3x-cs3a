@@ -5,10 +5,10 @@ describe('cs3a', function(){
 
   // fixtures
   var pairA = {key:new Buffer('627f107c4c86d0f81cf6ad345b2a41b8ea29ae111db199c0fed547358ecb4257','hex'), secret:new Buffer('458fbd8b4964e29ed9f274c837055cc5f28ce37abe9cabf1869935c7a65da23b','hex')};
-  var mbodyAB = new Buffer('f1b9a7a19b6a3f583322c854698bb1b10685ae35c2fb293062ea9cafe4bf38219953ca617277420b876990fbd8205528c68f6ba180e36d7376de3da573d2487e0e41866f38a8c55cf5ffac42fd19e05c3796ea7361364c58a330','hex');
+  var mbodyAB = new Buffer('ef60cc1a562d0cf7efef41fae16533ef238cc0feeb24ae6ca0bef3ec80c86b2a0fed311eac60b72c0286845ae34f6b746fb152d48d8f9a712fe411f9e4bef7a4ba806519740886711b47bbc29d6ab473b2de6892bf10465fb41d','hex');
 
   var pairB = {key:new Buffer('3d6062a1bb3549b56f8066f314574b5f444fe13f0b0c5cd0b5b95f12f09fd16c','hex'), secret:new Buffer('a117b27b21ac8bc39e53aeb552f4f4e92fd76856ef98985ebd1cc76612169d89','hex')};
-  var mbodyBA = new Buffer('963a0d589fc04085efa24b8d1b2519a44706acfbb9a10123a696e5ae68da9453251cc62d62ae0e035683eb0911ea5fcad60fbd7ca603f32dc186824d2aa7cd90931650515ccf8033e32948831cb98a0f5e58caea080afa5d4436','hex');
+  var mbodyBA = new Buffer('9019f4987aec555a4669b1c4ff6f7188bd94ce8c0a319b91c16328dbe57fab2e440dfc7dce24ad555eaafa566c73605a510ef5013a0331a2ca834b70d5fb39b3421e957364665ac2bda633ec89ff4b6921417f94b58b40f2b4cb','hex');
   
   it('should export an object', function(){
     expect(cs3a).to.be.a('object');
@@ -72,7 +72,7 @@ describe('cs3a', function(){
     var message = remote.encrypt(local, new Buffer('0000','hex'));
     expect(Buffer.isBuffer(message)).to.be.equal(true);
     expect(message.length).to.be.equal(90);
-//    console.log("mbodyAB",message.toString('hex'));
+    console.log("mbodyAB",message.toString('hex'));
   });
 
   it('should remote encrypt', function(){
@@ -81,7 +81,7 @@ describe('cs3a', function(){
     var message = remote.encrypt(local, new Buffer('0000','hex'));
     expect(Buffer.isBuffer(message)).to.be.equal(true);
     expect(message.length).to.be.equal(90);
-//    console.log("mbodyBA",message.toString('hex'));
+    console.log("mbodyBA",message.toString('hex'));
   });
 
   it('should remote verify', function(){
