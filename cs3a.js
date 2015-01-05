@@ -62,9 +62,13 @@ exports.Remote = function(key)
   self.verify = function(local, body){
     if(!Buffer.isBuffer(body)) return false;
     var mac1 = body.slice(body.length-16).toString("hex");
+    var key = body.slice(0,32);
+    var nonce = body.slice(32,32+24);
+    var innerc = body.slice(32+24,body.length-16);
 
     var secret = sodium.crypto_box_beforenm(self.endpoint, local.secret);
-    var mac2 = sodium.crypto_onetimeauth(body.slice(0,body.length-16),secret).toString("hex");
+    var akey = crypto.createHash('sha256').update(Buffer.concat([nonce,secret])).digest();
+    var mac2 = sodium.crypto_onetimeauth(Buffer.concat([key,innerc]),secret).toString("hex");
 
     if(mac2 != mac1) return false;
 
@@ -85,7 +89,8 @@ exports.Remote = function(key)
 
     // prepend the line public key and hmac it  
     var secret = sodium.crypto_box_beforenm(self.endpoint, local.secret);
-    var mac = sodium.crypto_onetimeauth(body,secret);
+    var key = crypto.createHash('sha256').update(Buffer.concat([nonce,secret])).digest();
+    var mac = sodium.crypto_onetimeauth(Buffer.concat([self.ephemeral.publicKey,innerc]),secret);
 
     return Buffer.concat([body,mac]);
   };
