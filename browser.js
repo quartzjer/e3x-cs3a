@@ -1,8 +1,11 @@
 var nacl_factory = require("js-nacl");
 var nacl = nacl_factory.instantiate();
 exports = module.exports = require('./cs3a.js');
-sodium = function()
+
+// export the nacl->sodium wrapper
+exports.sodium = function()
 {
+  var self = {};
      //From Buffer to ArrayBuffer:
   function toArrayBuffer(buffer) {
     var ab = new ArrayBuffer(buffer.length);
@@ -56,10 +59,8 @@ sodium = function()
           )
       );
   }
+  return self;
 }
-try{
-  // load node-specific crypto methods
-  exports.crypt(sodium);
-}catch(E){
-  console.log("CS3a failed to load (TODO use tweetnacl.js?):",E);
-}
+
+// deploy wrapper for browser
+exports.crypt(exports.sodium());

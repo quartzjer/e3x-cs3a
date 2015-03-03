@@ -9,5 +9,6 @@ try{
   // load node-specific crypto methods
   exports.crypt(sodium);
 }catch(E){
-  console.log("CS3a failed to load (TODO use tweetnacl.js?):",E);
+  var browser = require('./browser.js');
+  exports.crypt(browser.sodium());
 }
