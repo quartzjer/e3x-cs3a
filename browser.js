@@ -6,14 +6,13 @@ exports = module.exports = require('./cs3a.js');
 exports.sodium = function()
 {
   var self = {};
-     //From Buffer to ArrayBuffer:
-  function toArrayBuffer(buffer) {
-    var ab = new ArrayBuffer(buffer.length);
-    var view = new Uint8Array(ab);
+     //From Buffer to Uint8Array:
+  function toArray(buffer) {
+    var view = new Uint8Array(buffer.length);
     for (var i = 0; i < buffer.length; ++i) {
         view[i] = buffer[i];
     }
-    return ab;
+    return view;
   }
     //From ArrayBuffer to Buffer
    function toBuffer(ab) {
@@ -24,38 +23,39 @@ exports.sodium = function()
     }
     return buffer;
   }
+
   self.crypto_secretbox_BOXZEROBYTES = nacl.crypto_secretbox_BOXZEROBYTES;
   self.crypto_box_keypair = function(){
       var keypair = nacl.crypto_box_keypair();
-      return {key:toBuffer(keypair.publicKey), secret:toBuffer(keypair.secretKey)};
+      return {publicKey:toBuffer(keypair.boxPk), secretKey:toBuffer(keypair.boxSk)};
   };
   self.crypto_box_beforenm = function(publickey, secretkey){
-      var precomputedsharedkey = nacl.crypto_box_precompute(toArrayBuffer(publickey), toArrayBuffer(secretkey) );
+      var precomputedsharedkey = nacl.crypto_box_precompute(toArray(publickey), toArray(secretkey) );
       return toBuffer(precomputedsharedkey.boxK);
   };
   self.crypto_secretbox_open = function(ciphertextBin, nonceBin, keyBin){
       return toBuffer(
           nacl.crypto_secretbox_open(
-              toArrayBuffer(ciphertextBin),
-              toArrayBuffer(nonceBin),
-              toArrayBuffer(keyBin)
+              toArray(ciphertextBin),
+              toArray(nonceBin),
+              toArray(keyBin)
           )
       );
   }
   self.crypto_secretbox = function(msgBin, nonceBin, keyBin){
       return toBuffer(
           nacl.crypto_secretbox(
-              toArrayBuffer(msgBin),
-              toArrayBuffer(nonceBin),
-              toArrayBuffer(keyBin)
+              toArray(msgBin),
+              toArray(nonceBin),
+              toArray(keyBin)
           )
       );
   }
   self.crypto_onetimeauth = function(message, secretkey){
       return toBuffer(
           nacl.crypto_onetimeauth(
-              toArrayBuffer(message),
-              toArrayBuffer(secretkey)
+              toArray(message),
+              toArray(secretkey)
           )
       );
   }
