@@ -4,7 +4,7 @@
   "description": "CS3a - e3x cipher set",
   "main": "node.js",
   "dependencies": {
-    "js-nacl": "0.6.x"
+    "tweetnacl": "^0.13.0"
   },
   "optionalDependencies": {
     "sodium": "1.0.x"
@@ -12,11 +12,11 @@
   "devDependencies": {
     "chai": "*",
     "mocha": "*"
-   },
-   "scripts": {
+  },
+  "scripts": {
     "test": "make test"
-   },
-  "browserify":"./browser.js",
+  },
+  "browserify": "./browser.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/quartzjer/e3x-cs3a.git"
